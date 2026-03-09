@@ -70,7 +70,7 @@ const AdminLogin = () => {
       }
 
       // Redirect to the separate static admin dashboard.
-      window.location.href = "http://127.0.0.1:5500/kmmk/admin-static/index.html";
+      window.location.href = `http://127.0.0.1:5500/kmmk/admin-static/index.html`;
     } catch (err) {
       console.error(err);
       setError("Unexpected error during sign in. Please try again.");
