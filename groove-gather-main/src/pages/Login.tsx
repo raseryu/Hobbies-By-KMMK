@@ -137,26 +137,26 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
+            <Link to="/admin-login">
+              <Button
+                variant="outline"
+                className="w-full border-border text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-transparent font-heading"
+                size="lg"
+              >
+                Sign in as Admin
+              </Button>
+            </Link>
+
             <Button
               type="button"
-              className="w-full border-border text-muted-foreground hover:text-primary hover:border-primary/50 font-heading"
+              className="w-full border-border text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-transparent font-heading"
               size="lg"
               variant="outline"
               onClick={handleGuestSignIn}
             >
               Sign in as Guest
             </Button>
-
-            <Link to="/admin-login">
-              <Button
-                variant="outline"
-                className="w-full border-border text-muted-foreground hover:text-primary hover:border-primary/50 font-heading"
-                size="lg"
-              >
-                Sign in as Admin
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
