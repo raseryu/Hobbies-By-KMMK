@@ -123,12 +123,16 @@ const Login = () => {
               Sign up
             </Link>
           </p>
+<<<<<<< Updated upstream
 
 <<<<<<< Updated upstream
           
 
           
 =======
+>>>>>>> Stashed changes
+=======
+
 >>>>>>> Stashed changes
         </div>
       </div>

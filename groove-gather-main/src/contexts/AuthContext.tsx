@@ -132,6 +132,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: trimmedEmail,
           password: trimmedPassword,
         });
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         if (error || !data?.user) throw new Error("Invalid email or password");
