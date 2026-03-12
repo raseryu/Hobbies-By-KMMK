@@ -134,6 +134,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
