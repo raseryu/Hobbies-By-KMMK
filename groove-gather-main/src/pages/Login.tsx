@@ -124,9 +124,12 @@ const Login = () => {
             </Link>
           </p>
 
+<<<<<<< Updated upstream
           
 
           
+=======
+>>>>>>> Stashed changes
         </div>
       </div>
     </div>

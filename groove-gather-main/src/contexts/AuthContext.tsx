@@ -19,25 +19,16 @@ const STORAGE_KEY = "kmmk_auth_user_v1";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-async function hashPassword(password: string): Promise<string> {
-  if (!window.crypto?.subtle) throw new Error("Web Crypto API not available");
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function readStoredUser(): AuthUser | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as AuthUser;
-    if (!parsed?.id || !parsed?.email) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+function mapSupabaseUserToAuthUser(user: {
+  id: string;
+  email?: string | null;
+  user_metadata?: { role?: string };
+}): AuthUser {
+  return {
+    id: user.id,
+    email: user.email ?? "",
+    role: (user.user_metadata?.role as string) || "user",
+  };
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -45,8 +36,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUser(readStoredUser());
-    setLoading(false);
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as AuthUser;
+        if (parsed?.id && parsed?.email) {
+          setUser(parsed);
+        }
+      } catch {
+        // ignore invalid stored value
+      }
+    }
+
+    const init = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+        setLoading(false);
+        return;
+      }
+
+      const next = mapSupabaseUserToAuthUser(data.user as any);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      setUser(next);
+      setLoading(false);
+    };
+
+    init();
+
+    const {
+      data: authListener,
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const next = mapSupabaseUserToAuthUser(session.user as any);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        setUser(next);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+        setUser(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const api = useMemo<AuthContextType>(
@@ -58,44 +90,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const trimmedPassword = password.trim();
         if (!trimmedEmail || !trimmedPassword) throw new Error("Email and password are required");
 
-        const hashed = await hashPassword(trimmedPassword);
+        const { data, error } = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password: trimmedPassword,
+        });
 
-        const { data, error } = await supabase
-          .from("users")
-          .insert({ email: trimmedEmail, password: hashed, role: "user" })
-          .select("id, email, role")
-          .single();
+        if (error) {
+          throw error;
+        }
 
-        if (error || !data) throw new Error("Failed to create account");
-
-        const next: AuthUser = { id: data.id, email: data.email, role: data.role || "user" };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        setUser(next);
+        if (data?.user) {
+          const next = mapSupabaseUserToAuthUser(data.user as any);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          setUser(next);
+        }
       },
       login: async ({ email, password }) => {
         const trimmedEmail = email.trim().toLowerCase();
         const trimmedPassword = password.trim();
         if (!trimmedEmail || !trimmedPassword) throw new Error("Email and password are required");
 
+<<<<<<< Updated upstream
         const hashed = await hashPassword(trimmedPassword);
+=======
+        // Hardcoded admin: no Supabase, redirect handled by Login page
+        if (
+          trimmedEmail === HARDCODED_ADMIN.email.toLowerCase() &&
+          trimmedPassword === HARDCODED_ADMIN.password
+        ) {
+          const next: AuthUser = {
+            id: "admin",
+            email: HARDCODED_ADMIN.email,
+            role: HARDCODED_ADMIN.role,
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          setUser(next);
+          return next;
+        }
 
-        const { data, error } = await supabase
-          .from("users")
-          .select("id, email, role")
-          .eq("email", trimmedEmail)
-          .eq("password", hashed)
-          .maybeSingle();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password: trimmedPassword,
+        });
+>>>>>>> Stashed changes
 
-        if (error) throw new Error("Failed to sign in");
-        if (!data) throw new Error("Invalid email or password");
+        if (error || !data?.user) throw new Error("Invalid email or password");
 
-        const next: AuthUser = { id: data.id, email: data.email, role: data.role || "user" };
+        const next = mapSupabaseUserToAuthUser(data.user as any);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         setUser(next);
       },
       logout: () => {
         localStorage.removeItem(STORAGE_KEY);
         setUser(null);
+        supabase.auth.signOut().catch((err) => {
+          console.error("Failed to sign out from Supabase", err);
+        });
       },
     }),
     [user, loading]

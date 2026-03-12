@@ -27,7 +27,11 @@ const Signup = () => {
       navigate("/");
     } catch (err) {
       console.error(err);
-      setError("Failed to create account. Email may already be used.");
+      const message =
+        err && typeof err === "object" && "message" in err && typeof (err as any).message === "string"
+          ? (err as any).message
+          : "Failed to create account. Please try again.";
+      setError(message);
     } finally {
       setLoading(false);
     }
