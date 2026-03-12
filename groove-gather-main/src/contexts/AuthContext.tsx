@@ -7,11 +7,18 @@ type AuthUser = {
   role: string;
 };
 
+/** Hardcoded admin — when this account logs in via the main login page, they are redirected to the admin dashboard */
+const HARDCODED_ADMIN = {
+  email: "admin@groove.com",
+  password: "Admin123!",
+  role: "head_admin" as const,
+};
+
 type AuthContextType = {
   user: AuthUser | null;
   loading: boolean;
   signup: (params: { email: string; password: string }) => Promise<void>;
-  login: (params: { email: string; password: string }) => Promise<void>;
+  login: (params: { email: string; password: string }) => Promise<AuthUser>;
   logout: () => void;
 };
 
@@ -77,6 +84,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const trimmedPassword = password.trim();
         if (!trimmedEmail || !trimmedPassword) throw new Error("Email and password are required");
 
+        // Hardcoded admin: no Supabase, redirect handled by Login page
+        if (
+          trimmedEmail === HARDCODED_ADMIN.email.toLowerCase() &&
+          trimmedPassword === HARDCODED_ADMIN.password
+        ) {
+          const next: AuthUser = {
+            id: "admin",
+            email: HARDCODED_ADMIN.email,
+            role: HARDCODED_ADMIN.role,
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          setUser(next);
+          return next;
+        }
+
         const hashed = await hashPassword(trimmedPassword);
 
         const { data, error } = await supabase
@@ -92,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const next: AuthUser = { id: data.id, email: data.email, role: data.role || "user" };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         setUser(next);
+        return next;
       },
       logout: () => {
         localStorage.removeItem(STORAGE_KEY);

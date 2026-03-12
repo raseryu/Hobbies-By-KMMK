@@ -8,7 +8,7 @@
 // Supabase client injected from index.html (window.supabaseClient)
 const supabaseClient = window.supabaseClient || null;
 
-// Current admin session (for now, static head_admin)
+// Hardcoded admin (must match AuthContext HARDCODED_ADMIN)
 const currentAdmin = {
   role: "head_admin",
   email: "admin@groove.com",

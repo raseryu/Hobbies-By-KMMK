@@ -23,7 +23,11 @@ const Login = () => {
     setError(null);
     setLoading(true);
     try {
-      await auth.login({ email, password });
+      const user = await auth.login({ email, password });
+      if (user.role === "head_admin") {
+        window.location.href = `${window.location.origin}/admin-static/index.html`;
+        return;
+      }
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -123,6 +127,7 @@ const Login = () => {
               Sign up
             </Link>
           </p>
+<<<<<<< Updated upstream
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -138,6 +143,8 @@ const Login = () => {
               Sign in as Admin
             </Button>
           </Link>
+=======
+>>>>>>> Stashed changes
         </div>
       </div>
     </div>
