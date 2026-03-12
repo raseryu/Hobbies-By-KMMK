@@ -123,8 +123,8 @@ const Login = () => {
               Sign up
             </Link>
           </p>
-<<<<<<< Updated upstream
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
           
@@ -139,6 +139,8 @@ const Login = () => {
 >>>>>>> Stashed changes
 =======
 
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         </div>
       </div>
